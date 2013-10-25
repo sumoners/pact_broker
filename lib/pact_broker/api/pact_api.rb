@@ -6,8 +6,35 @@ require 'sinatra'
 require 'sinatra/json'
 require 'sinatra/namespace'
 require 'sinatra/param'
+require 'pact_broker/models'
 
 module PactBroker
+
+  module Services
+    module PactService
+
+      extend self
+
+      extend PactBroker::Repositories
+
+      def create_or_update_pact params
+        provider = pacticipant_repository.find_by_name params[:provider]
+        consumer = pacticipant_repository.find_by_name_or_create params[:consumer]
+        version = version_repository.find_by_pacticipant_id_and_number_or_create consumer.id, params[:number]
+
+        if pact = pact_repository.find_by_version_and_provider(version.id, provider.id)
+          http_status = 200
+          pact.update(json_content: params[:json_content])
+        else
+          http_status = 201
+          pact_repository.create json_content: params[:json_content], version_id: version.id, provider_id: provider.id
+        end
+        http_status
+      end
+
+    end
+  end
+
 
   module Api
 
@@ -15,41 +42,20 @@ module PactBroker
 
       helpers do
         include PactBroker::Logging
-        include PactBroker::Repositories
-
-        def put_pact params
-          pacticipant = pacticipant_repository.create name: params[:name]
-          logger.info "Created pacticipant #{pacticipant}"
-
-          version = version_repository.create(pacticipant_id: pacticipant.id, number: params[:number])
-          logger.info "Created version #{version}"
-
-        end
-
-        # def find_or_create_consumer params
-        #   pacticipant = pacticipant_repository.find_by_name params[:name]
-        #   puts "In pact api, pacticipant #{pacticipant}"
-        #   if pacticipant == nil
-        #     pacticipant = pacticipant_repository.create name: params[:name]
-        #   else
-        #     pacticipant
-        #   end
-        # end
-
-        # def find_or_create_version params
-        #   consumer = find_or_create_consumer name: params[:name]
-
-        # end
       end
 
       helpers Sinatra::JSON
       helpers Sinatra::Param
       register Sinatra::Namespace
 
-      namespace '/pacticipant/:name/versions/:number/pacts' do
+      namespace '/pacticipant/:consumer/versions/:number/pacts' do
         put '/:provider' do
-          put_pact params
-          status 201
+          http_status = PactBroker::Services::PactService.create_or_update_pact(
+            provider: params[:provider],
+            consumer: params[:consumer],
+            number: params[:number],
+            json_content: request.body.read)
+          status http_status
         end
       end
     end
