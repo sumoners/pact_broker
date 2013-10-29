@@ -10,7 +10,7 @@ module PactBroker
       extend PactBroker::Repositories
 
       def create_or_update_pact params
-        provider = pacticipant_repository.find_by_name params[:provider]
+        provider = pacticipant_repository.find_by_name_or_create params[:provider]
         consumer = pacticipant_repository.find_by_name_or_create params[:consumer]
         version = version_repository.find_by_pacticipant_id_and_number_or_create consumer.id, params[:number]
 

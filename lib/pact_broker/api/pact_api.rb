@@ -8,7 +8,7 @@ module PactBroker
 
       namespace '/pacticipant/:consumer/versions/:number/pacts' do
         put '/:provider' do
-          pact, created = PactBroker::Services::PactService.create_or_update_pact(
+          pact, created = pact_service.create_or_update_pact(
             provider: params[:provider],
             consumer: params[:consumer],
             number: params[:number],

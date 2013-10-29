@@ -54,4 +54,10 @@ Pact.provider_states_for "Pact Broker Client" do
     end
   end
 
+  provider_state "'Condor' already exist in the pact-broker, but the 'Pricing Service' does not" do
+    set_up do
+      create_condor
+    end
+  end
+
 end

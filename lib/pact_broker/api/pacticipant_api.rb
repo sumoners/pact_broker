@@ -1,5 +1,4 @@
 require_relative 'base_api'
-require 'pact_broker/services/pacticipant_service'
 
 module PactBroker
 
@@ -10,12 +9,10 @@ module PactBroker
 
       namespace '/pacticipant' do
         get '/:name/repository_url' do
-          logger.info "GET REPOSTORY URL #{params}"
-          pacticipant = pacticipant_repository.find_by_name(params[:name])
-          logger.info "Found pacticipant #{pacticipant}"
-          if pacticipant && pacticipant.repository_url
+          repository_url = pacticipant_service.find_pacticipant_repository_url_by_pacticipant_name(params[:name])
+          if repository_url
             content_type 'text/plain'
-            pacticipant.repository_url
+            repository_url
           else
             status 404
           end
@@ -23,7 +20,7 @@ module PactBroker
 
         patch '/:name' do
           logger.info "Recieved request to patch #{params[:name]} with #{params}"
-          pacticipant, created = PactBroker::Services::PacticipantService.create_or_update_pacticipant(
+          pacticipant, created = pacticipant_service.create_or_update_pacticipant(
             name: params[:name],
             repository_url: params[:repository_url]
           )

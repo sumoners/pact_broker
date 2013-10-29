@@ -7,7 +7,7 @@ require 'sinatra/json'
 require 'sinatra/namespace'
 require 'sinatra/param'
 require 'pact_broker/models'
-require 'pact_broker/services/pact_service'
+require 'pact_broker/services'
 
 module PactBroker
 
@@ -17,6 +17,7 @@ module PactBroker
 
       helpers do
         include PactBroker::Logging
+        include PactBroker::Services
       end
 
       set :raise_errors, false

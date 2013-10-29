@@ -7,6 +7,15 @@ module PactBroker
 
       extend PactBroker::Repositories
 
+      def self.find_pacticipant_repository_url_by_pacticipant_name name
+        pacticipant = pacticipant_repository.find_by_name(name)
+        if pacticipant && pacticipant.repository_url
+          pacticipant.repository_url
+        else
+          nil
+        end
+      end
+
       def self.create_or_update_pacticipant params
         pacticipant = pacticipant_repository.find_by_name(params[:name])
         if pacticipant
