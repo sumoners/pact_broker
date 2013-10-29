@@ -30,6 +30,7 @@ Pact.provider_states_for "Pact Broker Client" do
 
   provider_state "an error occurs while publishing a pact" do
     set_up do
+      PactBroker::Services::PactService.stub(:create_or_update_pact).and_raise("an error")
       # Your set up code goes here
     end
   end

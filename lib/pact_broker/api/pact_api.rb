@@ -44,6 +44,18 @@ module PactBroker
         include PactBroker::Logging
       end
 
+      set :raise_errors, false
+      set :show_exceptions, false
+
+
+      error do
+        e = env['sinatra.error']
+        logger.error e
+        content_type :json
+        status 500
+        {:message => e.message, :backtrace => e.backtrace }.to_json
+      end
+
       helpers Sinatra::JSON
       helpers Sinatra::Param
       register Sinatra::Namespace
