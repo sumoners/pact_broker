@@ -1,4 +1,5 @@
 require_relative 'base_api'
+require 'ostruct'
 
 module PactBroker
 
@@ -6,20 +7,33 @@ module PactBroker
 
     class PactApi < BaseApi
 
+      def create_pact_for_rendering pact
+        version_struct = OpenStruct.new(:number => pact.consumer_version.number)
+        consumer_struct = OpenStruct.new(:version => version_struct, :name => pact.consumer.name)
+        OpenStruct.new(consumer: pact.consumer, :provider => OpenStruct.new(:name => pact.provider.name))
+      end
+
       namespace '/pacts' do
         get '/latest' do
           param :consumer, String
           param :provider, String
 
-          pact = nil
-          pact = pact_service.find_pact(consumer: params[:consumer], provider: params[:provider], number: 'last')
-          if pact
-            status 200
-            headers 'X-Pact-Consumer-Version' => pact.consumer_version_number
-            json pact
+          if params[:consumer] || params[:provider]
+            pact = nil
+            pact = pact_service.find_pact(consumer: params[:consumer], provider: params[:provider], number: 'last')
+            if pact
+              status 200
+              headers 'X-Pact-Consumer-Version' => pact.consumer_version_number
+              json pact
+            else
+              status 404
+            end
           else
-            status 404
+            pacts = pact_service.find_latest_pacts.collect{ | pact | create_pact_for_rendering(pact) }
+
+
           end
+
 
         end
       end

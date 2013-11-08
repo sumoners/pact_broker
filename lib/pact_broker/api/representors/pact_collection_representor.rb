@@ -1,6 +1,7 @@
 require 'roar/representer/json/hal'
 require_relative 'pact_broker_urls'
 require_relative 'version_representor'
+require_relative 'pact_representor'
 
 module PactBroker
 
