@@ -35,6 +35,8 @@ module PactBroker
       if configuration.auto_migrate_db
         logger.info "Migrating database"
         PactBroker::DB.run_migrations configuration.database_connection
+        logger.info "Finished migrating database"
+        puts "bethtest finished"
       else
         logger.info "Skipping database migrations"
       end
@@ -45,6 +47,9 @@ module PactBroker
 
       @app.use Rack::Static, :urls => ["/stylesheets", "/css", "/fonts", "/js", "/javascripts"], :root => PactBroker.project_root.join("public")
       @app.use Rack::PactBroker::ConvertFileExtensionToAcceptHeader
+
+      puts "BETHTEST build_app"
+      puts PactBroker.logger.inspect
 
       if configuration.use_hal_browser
         logger.info "Mounting HAL browser"
