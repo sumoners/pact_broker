@@ -12,6 +12,9 @@ module PactBroker
 
         include Timestamps
 
+        property :name
+        property :value
+
         link :self do | options |
           tag_url(options[:base_url], represented)
         end

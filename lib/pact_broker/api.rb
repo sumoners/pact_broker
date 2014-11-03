@@ -4,6 +4,7 @@ require 'pact_broker/api/resources/latest_pacts'
 require 'pact_broker/api/resources/pacticipant'
 require 'pact_broker/api/resources/pacticipants'
 require 'pact_broker/api/resources/tag'
+require 'pact_broker/api/resources/version_tags'
 require 'pact_broker/api/resources/index'
 require 'pact_broker/api/resources/relationships'
 require 'pact_broker/api/resources/group'
@@ -32,6 +33,7 @@ module PactBroker
         add ['pacts', 'latest'], Api::Resources::LatestPacts
         add ['pacticipants'], Api::Resources::Pacticipants
         add ['pacticipants', :name], Api::Resources::Pacticipant
+        add ['pacticipants', :pacticipant_name, 'versions', :pacticipant_version_number, 'tags'], Api::Resources::VersionTags
         add ['pacticipants', :pacticipant_name, 'versions', :pacticipant_version_number, 'tags', :tag_name], Api::Resources::Tag
         add ['relationships'], Api::Resources::Relationships
         add ['groups', :pacticipant_name], Api::Resources::Group
