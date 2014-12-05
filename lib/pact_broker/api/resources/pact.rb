@@ -5,6 +5,9 @@ require 'pact_broker/api/decorators/pact_decorator'
 require 'pact_broker/json'
 require 'pact_broker/pacts/pact_params'
 require 'pact_broker/api/contracts/put_pact_params_contract'
+require 'lib/pact_broker/pacts/create'
+require 'lib/pact_broker/pacts/delete'
+require 'lib/pact_broker/pacts/find'
 
 module PactBroker
 
@@ -12,6 +15,16 @@ module PactBroker
     module Resources
 
       class Pact < BaseResource
+
+        OPERATIONS = {
+          'GET' => PactBroker::Pacts::Find,
+          'PUT' => PactBroker::Pacts::Create,
+          'DELETE' => PactBroker::Pacts::Delete
+        }
+
+        def initialize
+          @operation = OPERATIONS[request.method]
+        end
 
         include PacticipantResourceMethods
 
@@ -28,13 +41,10 @@ module PactBroker
         end
 
         def malformed_request?
-          if request.put?
-            return invalid_json? ||
-              contract_validation_errors?(Contracts::PutPactParamsContract.new(pact_params)) ||
-              potential_duplicate_pacticipants?(pact_params.pacticipant_names)
-          else
-            false
-          end
+          return true if invalid_json?
+          errors = @operation.validation_errors(pact_params, base_url)
+          set_json_validation_error_messages errors.full_messages if errors.any?
+          errors.any?
         end
 
         def resource_exists?
@@ -43,7 +53,7 @@ module PactBroker
 
         def from_json
           response_code = pact ? 200 : 201
-          @pact = pact_service.create_or_update_pact(pact_params)
+          @pact = @operation.(pact_params)
           response.body = to_json
           response_code
         end
@@ -53,13 +63,14 @@ module PactBroker
         end
 
         def delete_resource
-          pact_service.delete(pact_params)
+          @operation.(pact_params)
           true
         end
 
         private
 
         def pact
+          # How to use the @operation here???
           @pact ||= pact_service.find_pact(pact_params)
         end
 
