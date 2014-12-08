@@ -23,7 +23,7 @@ module PactBroker
         }
 
         def initialize
-          @operation = OPERATIONS[request.method]
+          @operation = OPERATIONS[request.method].build(pact_params)
         end
 
         include PacticipantResourceMethods
@@ -41,8 +41,8 @@ module PactBroker
         end
 
         def malformed_request?
-          return true if invalid_json?
-          errors = @operation.validation_errors(pact_params, base_url)
+          return true if request.put? && invalid_json?
+          errors = @operation.validation_errors(base_url: base_url)
           set_json_validation_error_messages errors.full_messages if errors.any?
           errors.any?
         end
@@ -53,7 +53,7 @@ module PactBroker
 
         def from_json
           response_code = pact ? 200 : 201
-          @pact = @operation.(pact_params)
+          result, @pact = @operation.process!
           response.body = to_json
           response_code
         end
@@ -63,15 +63,14 @@ module PactBroker
         end
 
         def delete_resource
-          @operation.(pact_params)
+          @operation.process!
           true
         end
 
         private
 
         def pact
-          # How to use the @operation here???
-          @pact ||= pact_service.find_pact(pact_params)
+          @pact ||= PactBroker::Pacts::Find.run(pact_params).last
         end
 
         def pact_params

@@ -9,13 +9,14 @@ module PactBroker
 
       include PactBroker::Services
 
-      def process(params)
-        pact_service.delete(params)
+      def process( ignored )
+        pact_service.delete(params.first )
       end
 
-      def self.validation_errors *args
+      def validation_errors *args
         []
       end
+
     end
   end
 end

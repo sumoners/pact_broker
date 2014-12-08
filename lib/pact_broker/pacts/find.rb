@@ -9,18 +9,13 @@ module PactBroker
       include PactBroker::Services
 
       def process(params)
-        model
+        pact_service.find_pact(params)
       end
 
-      def self.validation_errors *args
+      def validation_errors *args
         []
       end
 
-      private
-
-      def model!
-        pact_service.find_pact(params)
-      end
     end
 
   end
