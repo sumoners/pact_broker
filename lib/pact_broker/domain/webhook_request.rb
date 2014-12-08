@@ -27,6 +27,7 @@ module PactBroker
       # Reform gets confused by the :method method, as :method is a standard
       # Ruby method.
       alias_method :http_method, :method
+      alias_method :http_method=, :method=
 
       def initialize attributes = {}
         @method = attributes[:method]
