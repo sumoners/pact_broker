@@ -10,21 +10,21 @@ module PactBroker
       include PactBroker::Services
       extend PactBroker::Services
 
-      def process ignored
-        @model = pact_service.create_or_update_pact(params.first)
+      def process params
+        pact_service.create_or_update_pact(params)
       end
 
-      def validation_errors options = {}
-        contract = PactBroker::Api::Contracts::PutPactParamsContract.new(params.first)
+      def validation_errors params, options = {}
+        contract = PactBroker::Api::Contracts::PutPactParamsContract.new(params)
         unless contract.validate
           return contract.errors
         end
-        potential_duplicate_pacticipants(options.fetch(:base_url))
+        potential_duplicate_pacticipants(params, options.fetch(:base_url))
       end
 
       # Need to fix this message - was made for text/plain, will now be in json
-      def potential_duplicate_pacticipants base_url
-        messages = pacticipant_service.messages_for_potential_duplicate_pacticipants params.first.pacticipant_names, base_url
+      def potential_duplicate_pacticipants params, base_url
+        messages = pacticipant_service.messages_for_potential_duplicate_pacticipants params.pacticipant_names, base_url
 
         OpenStruct.new(
           :any? => messages.any?,

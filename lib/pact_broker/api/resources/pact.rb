@@ -42,7 +42,7 @@ module PactBroker
 
         def malformed_request?
           return true if request.put? && invalid_json?
-          errors = @operation.validation_errors(base_url: base_url)
+          errors = @operation.validation_errors(pact_params, base_url: base_url)
           set_json_validation_error_messages errors.full_messages if errors.any?
           errors.any?
         end
@@ -53,7 +53,7 @@ module PactBroker
 
         def from_json
           response_code = pact ? 200 : 201
-          result, @pact = @operation.process!
+          result, @pact = @operation.process(pact_params)
           response.body = to_json
           response_code
         end
@@ -63,7 +63,7 @@ module PactBroker
         end
 
         def delete_resource
-          @operation.process!
+          @operation.process(pact_params)
           true
         end
 
