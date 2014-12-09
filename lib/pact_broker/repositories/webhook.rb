@@ -19,7 +19,7 @@ module PactBroker
         is_json_request_body = !(String === webhook.request.body || webhook.request.body.nil?) # Can't rely on people to set content type
         new(
           uuid: webhook.uuid,
-          method: webhook.request.method,
+          method: webhook.request.http_method,
           url: webhook.request.url,
           username: webhook.request.username,
           password: not_plain_text_password(webhook.request.password),
@@ -46,7 +46,7 @@ module PactBroker
       end
 
       def request_attributes
-        values.merge(headers: parsed_headers, body: parsed_body, password: plain_text_password)
+        values.merge(headers: parsed_headers, body: parsed_body, password: plain_text_password, http_method: self[:method])
       end
 
       def plain_text_password

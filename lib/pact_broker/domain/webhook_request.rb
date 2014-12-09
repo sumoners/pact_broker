@@ -30,7 +30,7 @@ module PactBroker
       alias_method :http_method=, :method=
 
       def initialize attributes = {}
-        @method = attributes[:method]
+        @method = attributes[:method] || attributes[:http_method]
         @url = attributes[:url]
         @username = attributes[:username]
         @password = attributes[:password]

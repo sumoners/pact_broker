@@ -1,8 +1,8 @@
-
 require 'pact_broker/api/resources/base_resource'
 require 'pact_broker/api/decorators/webhook_decorator'
 require 'pact_broker/api/decorators/webhooks_decorator'
 require 'pact_broker/api/contracts/webhook_contract'
+require 'pact_broker/webhooks/create'
 
 module PactBroker
 
@@ -10,6 +10,14 @@ module PactBroker
     module Resources
 
       class PactWebhooks < BaseResource
+
+        OPERATIONS = {
+          'POST' => PactBroker::Pacts::Create
+        }
+
+        def operation
+          @operation ||= OPERATIONS[request.method].build(request_body)
+        end
 
         def allowed_methods
           ["POST", "GET"]
@@ -29,17 +37,12 @@ module PactBroker
 
         def malformed_request?
           if request.post?
-            return invalid_json? || validation_errors?(webhook)
+            return true if invalid_json?
+            errors = operation.validation_errors(params)
+            set_json_validation_error_messages errors.full_messages if errors.any?
+            return errors.any?
           end
           false
-        end
-
-        def validation_errors? webhook
-          if (errors = webhook_service.errors(webhook)).any?
-            response.headers['Content-Type'] = 'application/json'
-            response.body = {errors: errors.full_messages }.to_json
-          end
-          errors.any?
         end
 
         def create_path
@@ -51,7 +54,7 @@ module PactBroker
         end
 
         def from_json
-          saved_webhook = webhook_service.create next_uuid, webhook, consumer, provider
+          saved_webhook = operation.process(params, next_uuid, consumer, provider)
           response.body = Decorators::WebhookDecorator.new(saved_webhook).to_json(base_url: base_url)
         end
 
@@ -60,6 +63,10 @@ module PactBroker
         end
 
         private
+
+        def params
+          request_body
+        end
 
         def webhooks
           webhook_service.find_by_consumer_and_provider consumer, provider

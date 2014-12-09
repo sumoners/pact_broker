@@ -39,7 +39,7 @@ describe "Creating a webhook" do
     let(:webhook_hash) do
       {
         request: {
-          method: 'POST',
+          http_method: 'POST',
           url: 'http://example.org',
           headers: {
             :"Content-Type" => "application/json"

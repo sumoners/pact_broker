@@ -10,6 +10,8 @@ module PactBroker
       include PactBroker::Services
       extend PactBroker::Services
 
+      contract_class = PactBroker::Api::Contracts::PutPactParamsContract
+
       def process params
         pact_service.create_or_update_pact(params)
       end

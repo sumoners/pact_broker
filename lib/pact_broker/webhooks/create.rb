@@ -40,7 +40,8 @@ module PactBroker
 
       def process params, next_uuid, consumer, provider
         webhook = model
-        validate(params, webhook) do
+        validate(params, webhook) do | contract |
+          contract.sync
           webhook = webhook_service.create next_uuid, webhook, consumer, provider
         end
         webhook
